@@ -1,0 +1,163 @@
+<%- include('partials/header') %>
+
+<section class="section dashboard-section">
+  <div class="container">
+
+    <!-- ── DASHBOARD HEADER ────────────────────────────── -->
+    <div class="dash-header">
+      <!-- Personalised welcome using the user's avatar and name -->
+      <div class="dash-welcome">
+        <% if (profile.avatar) { %>
+          <img src="<%= profile.avatar %>" alt="Avatar" class="dash-avatar" />
+        <% } else { %>
+          <div class="dash-avatar-placeholder">
+            <%= profile.full_name.charAt(0).toUpperCase() %>
+          </div>
+        <% } %>
+        <div>
+          <h1 class="dash-title">Welcome back, <span class="text-gold"><%= profile.full_name.split(' ')[0] %></span></h1>
+          <p class="dash-subtitle">Member since <%= new Date(profile.created_at).toLocaleDateString('en-SG', {year:'numeric', month:'long'}) %></p>
+        </div>
+      </div>
+      <a href="/profile/edit" class="btn btn-outline-dark">
+        <i class="fas fa-user-pen"></i> Edit Profile
+      </a>
+    </div>
+
+    <!-- Flash messages from booking actions (query string set in redirect) -->
+    <% if (typeof query !== 'undefined') { %>
+      <% if (query.booked)     { %><div class="alert alert-success"><i class="fas fa-circle-check"></i> Booking created successfully!</div><% } %>
+      <% if (query.updated)   { %><div class="alert alert-success"><i class="fas fa-circle-check"></i> Booking updated.</div><% } %>
+      <% if (query.cancelled) { %><div class="alert alert-warning"><i class="fas fa-triangle-exclamation"></i> Booking cancelled.</div><% } %>
+    <% } %>
+
+    <!-- ── SUMMARY CARDS ──────────────────────────────── -->
+    <div class="dash-stats">
+      <div class="dash-stat-card">
+        <i class="fas fa-calendar-check dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num"><%= bookings.length %></span>
+          <span class="dash-stat-label">Total Bookings</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i class="fas fa-hourglass-half dash-stat-icon"></i>
+        <div>
+          <% const pending = bookings.filter(b => b.status === 'pending').length %>
+          <span class="dash-stat-num"><%= pending %></span>
+          <span class="dash-stat-label">Pending</span>
+        </div>
+      </div>
+      <div class="dash-stat-card">
+        <i class="fas fa-star dash-stat-icon"></i>
+        <div>
+          <span class="dash-stat-num"><%= reviews.length %></span>
+          <span class="dash-stat-label">Reviews Written</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY BOOKINGS TABLE ──────────────────────────── -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title"><i class="fas fa-bed"></i> My Bookings</h2>
+        <a href="/rooms" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus"></i> New Booking
+        </a>
+      </div>
+
+      <% if (bookings.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-calendar-xmark empty-icon"></i>
+          <h3>No bookings yet</h3>
+          <p>Ready for your next stay? <a href="/rooms">Browse our rooms</a>.</p>
+        </div>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Guests</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% bookings.forEach(b => { %>
+                <tr>
+                  <td>
+                    <div class="table-room-cell">
+                      <img src="<%= b.image_url || '/images/room-placeholder.jpg' %>" alt="" class="table-room-thumb" />
+                      <span><%= b.room_name %></span>
+                    </div>
+                  </td>
+                  <!-- Format dates nicely using JS Date API -->
+                  <td><%= new Date(b.check_in).toLocaleDateString('en-SG', {day:'2-digit', month:'short', year:'numeric'}) %></td>
+                  <td><%= new Date(b.check_out).toLocaleDateString('en-SG', {day:'2-digit', month:'short', year:'numeric'}) %></td>
+                  <td><%= b.guests %></td>
+                  <td><strong>SGD <%= Number(b.total_price).toFixed(2) %></strong></td>
+                  <!-- Status badge with colour-coded class -->
+                  <td><span class="status-badge status-<%= b.status %>"><%= b.status %></span></td>
+                  <td class="table-actions">
+                    <!-- Only allow editing/cancellation of pending bookings -->
+                    <% if (b.status === 'pending') { %>
+                      <a href="/booking/edit/<%= b.id %>" class="btn btn-ghost btn-xs">
+                        <i class="fas fa-pen"></i> Edit
+                      </a>
+                      <form action="/booking/delete/<%= b.id %>" method="POST" style="display:inline">
+                        <button type="submit" class="btn btn-danger btn-xs"
+                          onclick="return confirm('Cancel this booking?')">
+                          <i class="fas fa-xmark"></i> Cancel
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ── MY REVIEWS ─────────────────────────────────── -->
+    <div class="dash-section">
+      <h2 class="dash-section-title"><i class="fas fa-star"></i> My Reviews</h2>
+      <% if (reviews.length === 0) { %>
+        <p class="text-muted">You haven't left any reviews yet. Stay with us and share your experience!</p>
+      <% } else { %>
+        <div class="reviews-list">
+          <% reviews.forEach(r => { %>
+            <div class="review-card">
+              <div class="review-room-name"><i class="fas fa-bed"></i> <%= r.room_name %></div>
+              <div class="review-stars">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <i class="fas fa-star <%= i <= r.rating ? 'star-filled' : 'star-empty' %>"></i>
+                <% } %>
+              </div>
+              <p class="review-comment">"<%= r.comment %>"</p>
+              <div class="review-meta">
+                <span class="review-date"><%= new Date(r.created_at).toLocaleDateString('en-SG', {year:'numeric', month:'short', day:'numeric'}) %></span>
+                <!-- Delete own review -->
+                <form action="/review/delete/<%= r.id %>" method="POST" style="display:inline">
+                  <button type="submit" class="btn-icon-delete" onclick="return confirm('Delete this review?')">
+                    <i class="fas fa-trash-can"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</section>
+
+<%- include('partials/footer') %>

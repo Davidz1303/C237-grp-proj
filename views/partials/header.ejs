@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DreamStay Hotel & Suites</title>
+  <!-- Google Fonts: Playfair Display for headings, Inter for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- Font Awesome for icons (CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Our main stylesheet -->
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- ── Navigation Bar ──────────────────────────────────────── -->
+<!-- `user` is set in res.locals in app.js so it's always available here -->
+<nav class="navbar">
+  <div class="nav-container">
+
+    <!-- Brand Logo -->
+    <a href="/" class="nav-brand">
+      <span class="brand-icon">✦</span> DreamStay Hotel
+    </a>
+
+    <!-- Hamburger button for mobile (toggled by main.js) -->
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Navigation links -->
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"       class="nav-link">Home</a></li>
+      <li><a href="/rooms"  class="nav-link">Rooms</a></li>
+      <li><a href="/about"  class="nav-link">About</a></li>
+
+      <% if (user) { %>
+        <!-- Logged-in user: show their name + dashboard/admin links -->
+        <% if (user.role === 'admin') { %>
+          <li><a href="/admin" class="nav-link nav-admin"><i class="fas fa-shield-halved"></i> Admin</a></li>
+        <% } else { %>
+          <li><a href="/dashboard" class="nav-link"><i class="fas fa-calendar-check"></i> My Bookings</a></li>
+        <% } %>
+
+        <!-- User avatar + name dropdown -->
+        <li class="nav-user-menu">
+          <button class="nav-user-btn" id="userMenuBtn">
+            <% if (user.avatar) { %>
+              <img src="<%= user.avatar %>" alt="Avatar" class="nav-avatar" />
+            <% } else { %>
+              <span class="nav-avatar-placeholder"><%= user.full_name.charAt(0).toUpperCase() %></span>
+            <% } %>
+            <span class="nav-user-name"><%= user.full_name.split(' ')[0] %></span>
+            <i class="fas fa-chevron-down nav-chevron"></i>
+          </button>
+          <!-- Dropdown menu -->
+          <div class="user-dropdown" id="userDropdown">
+            <a href="/profile/edit"><i class="fas fa-user-pen"></i> Edit Profile</a>
+            <a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+          </div>
+        </li>
+
+      <% } else { %>
+        <!-- Not logged in: show Login + Register -->
+        <li><a href="/login"    class="nav-link">Login</a></li>
+        <li><a href="/register" class="btn-nav-cta">Book Now</a></li>
+      <% } %>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Main Page Content starts below navbar ──────────────── -->
+<main>

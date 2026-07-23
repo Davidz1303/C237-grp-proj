@@ -1,0 +1,116 @@
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container container-narrow">
+
+    <h1 class="page-title"><i class="fas fa-calendar-plus"></i> Book Your Stay</h1>
+
+    <!-- Show error from POST /book/:roomId if dates are invalid -->
+    <% if (error) { %>
+      <div class="alert alert-error"><i class="fas fa-circle-exclamation"></i> <%= error %></div>
+    <% } %>
+
+    <!-- ── ROOM SUMMARY CARD ───────────────────────────── -->
+    <div class="booking-room-preview">
+      <img
+        src="<%= room.image_url || '/images/room-placeholder.jpg' %>"
+        alt="<%= room.room_name %>"
+        class="booking-room-img"
+      />
+      <div class="booking-room-info">
+        <span class="room-type-badge badge-<%= room.room_type.toLowerCase() %>"><%= room.room_type %></span>
+        <h2><%= room.room_name %></h2>
+        <p class="booking-room-price">
+          <strong>SGD <%= Number(room.price_per_night).toFixed(0) %></strong> / night
+        </p>
+        <p class="booking-room-capacity">
+          <i class="fas fa-user"></i> Up to <%= room.capacity %> guests
+        </p>
+      </div>
+    </div>
+
+    <!--
+      Booking form — POSTs to /book/:roomId in app.js
+      Date inputs use `min` attribute to prevent selecting past dates
+    -->
+    <form action="/book/<%= room.id %>" method="POST" class="booking-form" id="bookingForm">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="check_in" class="form-label">
+            <i class="fas fa-calendar-arrow-down"></i> Check-in Date
+          </label>
+          <!-- min is today's date — set dynamically by JS in main.js -->
+          <input
+            type="date"
+            id="check_in"
+            name="check_in"
+            class="form-input"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="check_out" class="form-label">
+            <i class="fas fa-calendar-arrow-up"></i> Check-out Date
+          </label>
+          <input
+            type="date"
+            id="check_out"
+            name="check_out"
+            class="form-input"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="guests" class="form-label">
+          <i class="fas fa-users"></i> Number of Guests
+        </label>
+        <select id="guests" name="guests" class="form-input" required>
+          <% for (let g = 1; g <= room.capacity; g++) { %>
+            <option value="<%= g %>"><%= g %> Guest<%= g > 1 ? 's' : '' %></option>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Special requests — personalisation feature for each booking -->
+      <div class="form-group">
+        <label for="special_requests" class="form-label">
+          <i class="fas fa-comment-dots"></i> Special Requests <span class="optional">(optional)</span>
+        </label>
+        <textarea
+          id="special_requests"
+          name="special_requests"
+          class="form-input"
+          rows="3"
+          placeholder="E.g. early check-in, non-smoking floor, high floor, birthday decoration…"
+        ></textarea>
+        <p class="form-hint">We'll do our best to accommodate your requests.</p>
+      </div>
+
+      <!-- ── LIVE PRICE ESTIMATE ─────────────────────────── -->
+      <!-- Updated dynamically in main.js when dates change -->
+      <div class="price-estimate" id="priceEstimate" style="display:none;">
+        <div class="price-estimate-row">
+          <span>SGD <%= Number(room.price_per_night).toFixed(0) %> × <span id="estimateNights">0</span> nights</span>
+          <span><strong>SGD <span id="estimateTotal">0</span></strong></span>
+        </div>
+        <p class="price-estimate-note">Final confirmation sent to your email.</p>
+      </div>
+
+      <!-- Hidden field carries price per night for JS calculation -->
+      <input type="hidden" id="pricePerNight" value="<%= room.price_per_night %>" />
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg btn-block">
+          <i class="fas fa-check-circle"></i> Confirm Booking
+        </button>
+        <a href="/rooms/<%= room.id %>" class="btn btn-ghost btn-lg">Back</a>
+      </div>
+    </form>
+
+  </div>
+</section>
+
+<%- include('partials/footer') %>

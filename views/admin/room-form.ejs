@@ -1,0 +1,137 @@
+<%- include('../partials/header') %>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">✦ Admin Panel</div>
+    <nav class="admin-nav">
+      <a href="/admin"          class="admin-nav-link"><i class="fas fa-gauge"></i> Dashboard</a>
+      <a href="/admin/rooms"    class="admin-nav-link active"><i class="fas fa-bed"></i> Rooms</a>
+      <a href="/admin/bookings" class="admin-nav-link"><i class="fas fa-calendar-check"></i> Bookings</a>
+      <a href="/admin/users"    class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+      <hr class="admin-nav-divider" />
+      <a href="/"       class="admin-nav-link"><i class="fas fa-globe"></i> View Site</a>
+      <a href="/logout" class="admin-nav-link"><i class="fas fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <!--
+      This single view is used for BOTH adding and editing a room.
+      If `room` is null, we're adding. If `room` has data, we're editing.
+      The form action and title change accordingly.
+    -->
+    <div class="admin-topbar">
+      <h1 class="admin-page-title">
+        <% if (room) { %>
+          <i class="fas fa-pen"></i> Edit Room: <%= room.room_name %>
+        <% } else { %>
+          <i class="fas fa-plus"></i> Add New Room
+        <% } %>
+      </h1>
+      <a href="/admin/rooms" class="btn btn-ghost">← Back to Rooms</a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="admin-card">
+      <!--
+        enctype="multipart/form-data" required for image upload via multer
+        Action switches between /add and /edit/:id based on whether we have an existing room
+      -->
+      <form
+        action="<%= room ? '/admin/rooms/edit/' + room.id : '/admin/rooms/add' %>"
+        method="POST"
+        enctype="multipart/form-data"
+        class="admin-form"
+      >
+
+        <div class="form-row">
+          <!-- Room Name -->
+          <div class="form-group">
+            <label class="form-label">Room Name *</label>
+            <input type="text" name="room_name" class="form-input"
+              value="<%= room ? room.room_name : '' %>" placeholder="e.g. Harbour Deluxe" required />
+          </div>
+
+          <!-- Room Type -->
+          <div class="form-group">
+            <label class="form-label">Room Type *</label>
+            <select name="room_type" class="form-input" required>
+              <option value="">Select type…</option>
+              <% ['Standard','Deluxe','Suite'].forEach(t => { %>
+                <option value="<%= t %>" <%= room && room.room_type === t ? 'selected' : '' %>><%= t %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Price per night -->
+          <div class="form-group">
+            <label class="form-label">Price per Night (SGD) *</label>
+            <input type="number" name="price_per_night" class="form-input" step="0.01" min="0"
+              value="<%= room ? room.price_per_night : '' %>" placeholder="120.00" required />
+          </div>
+
+          <!-- Capacity -->
+          <div class="form-group">
+            <label class="form-label">Max Capacity (guests) *</label>
+            <input type="number" name="capacity" class="form-input" min="1" max="10"
+              value="<%= room ? room.capacity : 2 %>" required />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">Room Description</label>
+          <textarea name="description" class="form-input" rows="4"
+            placeholder="Describe the room features, atmosphere, and unique selling points…"
+          ><%= room ? room.description : '' %></textarea>
+        </div>
+
+        <!-- Amenities -->
+        <div class="form-group">
+          <label class="form-label">Amenities <span class="optional">(comma-separated)</span></label>
+          <input type="text" name="amenities" class="form-input"
+            value="<%= room ? room.amenities : '' %>"
+            placeholder="Free WiFi, Air Conditioning, Flat-screen TV, Mini-bar" />
+          <p class="form-hint">Separate each amenity with a comma.</p>
+        </div>
+
+        <!-- Room image upload -->
+        <div class="form-group">
+          <label class="form-label">Room Image</label>
+          <% if (room && room.image_url) { %>
+            <img src="<%= room.image_url %>" alt="Current image" class="admin-room-thumb-lg" />
+            <p class="form-hint">Upload a new image to replace the current one.</p>
+          <% } %>
+          <input type="file" name="image" class="form-input" accept="image/*" />
+        </div>
+
+        <!-- Availability toggle (only shown when editing an existing room) -->
+        <% if (room) { %>
+        <div class="form-group form-check-group">
+          <label class="form-label">Availability</label>
+          <div class="toggle-wrap">
+            <select name="is_available" class="form-input form-input-sm">
+              <option value="1" <%= room.is_available ? 'selected' : '' %>>Available</option>
+              <option value="0" <%= !room.is_available ? 'selected' : '' %>>Hidden / Unavailable</option>
+            </select>
+          </div>
+        </div>
+        <% } %>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-floppy-disk"></i> <%= room ? 'Save Changes' : 'Add Room' %>
+          </button>
+          <a href="/admin/rooms" class="btn btn-ghost btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>

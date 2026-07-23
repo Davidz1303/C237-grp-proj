@@ -1,0 +1,93 @@
+<%- include('../partials/header') %>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">✦ Admin Panel</div>
+    <nav class="admin-nav">
+      <a href="/admin"          class="admin-nav-link"><i class="fas fa-gauge"></i> Dashboard</a>
+      <a href="/admin/rooms"    class="admin-nav-link"><i class="fas fa-bed"></i> Rooms</a>
+      <a href="/admin/bookings" class="admin-nav-link active"><i class="fas fa-calendar-check"></i> Bookings</a>
+      <a href="/admin/users"    class="admin-nav-link"><i class="fas fa-users"></i> Users</a>
+      <hr class="admin-nav-divider" />
+      <a href="/"       class="admin-nav-link"><i class="fas fa-globe"></i> View Site</a>
+      <a href="/logout" class="admin-nav-link"><i class="fas fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1 class="admin-page-title">Manage Bookings</h1>
+    </div>
+
+    <!-- ── STATUS FILTER TABS ──────────────────────────── -->
+    <!-- Functional Expectation #4 — filtering/categorising information -->
+    <div class="filter-tabs">
+      <a href="/admin/bookings"                    class="filter-tab <%= !status ? 'active' : '' %>">All</a>
+      <a href="/admin/bookings?status=pending"     class="filter-tab <%= status==='pending'    ? 'active' : '' %>">Pending</a>
+      <a href="/admin/bookings?status=confirmed"   class="filter-tab <%= status==='confirmed'  ? 'active' : '' %>">Confirmed</a>
+      <a href="/admin/bookings?status=checked_in"  class="filter-tab <%= status==='checked_in' ? 'active' : '' %>">Checked In</a>
+      <a href="/admin/bookings?status=completed"   class="filter-tab <%= status==='completed'  ? 'active' : '' %>">Completed</a>
+      <a href="/admin/bookings?status=cancelled"   class="filter-tab <%= status==='cancelled'  ? 'active' : '' %>">Cancelled</a>
+    </div>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success">Booking status updated.</div>
+    <% } %>
+
+    <div class="admin-card">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (bookings.length === 0) { %>
+              <tr><td colspan="8" class="text-center text-muted">No bookings found.</td></tr>
+            <% } %>
+            <% bookings.forEach(b => { %>
+              <tr>
+                <td class="text-muted">#<%= b.id %></td>
+                <td>
+                  <strong><%= b.full_name %></strong><br/>
+                  <small class="text-muted"><%= b.email %></small>
+                </td>
+                <td><%= b.room_name %></td>
+                <td><%= new Date(b.check_in).toLocaleDateString('en-SG', {day:'2-digit', month:'short', year:'numeric'}) %></td>
+                <td><%= new Date(b.check_out).toLocaleDateString('en-SG', {day:'2-digit', month:'short', year:'numeric'}) %></td>
+                <td>SGD <%= Number(b.total_price).toFixed(2) %></td>
+                <td><span class="status-badge status-<%= b.status %>"><%= b.status %></span></td>
+                <td>
+                  <!--
+                    Admin can update booking status via dropdown + submit.
+                    POSTs to /admin/bookings/status/:id in app.js
+                  -->
+                  <form action="/admin/bookings/status/<%= b.id %>" method="POST" class="inline-form">
+                    <select name="status" class="form-input form-input-xs">
+                      <% ['pending','confirmed','checked_in','completed','cancelled'].forEach(s => { %>
+                        <option value="<%= s %>" <%= b.status === s ? 'selected' : '' %>><%= s %></option>
+                      <% }) %>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-xs">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../partials/footer') %>

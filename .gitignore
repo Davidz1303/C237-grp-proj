@@ -1,0 +1,21 @@
+# Node.js dependencies — these are restored with `npm install`
+node_modules/
+
+# User-uploaded files — don't commit these to git
+public/images/uploads/
+
+# Environment variables (if you add a .env file later)
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Log files
+*.log
+npm-debug.log*

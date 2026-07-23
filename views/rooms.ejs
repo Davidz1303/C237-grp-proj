@@ -1,0 +1,157 @@
+<%- include('partials/header') %>
+
+<!-- ── PAGE HERO ─────────────────────────────────────────── -->
+<section class="page-hero">
+  <div class="page-hero-content">
+    <p class="section-eyebrow">Accommodation</p>
+    <h1 class="page-hero-title">Our Rooms &amp; Suites</h1>
+    <p class="page-hero-sub">From boutique standard rooms to our legendary Presidential Suite.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- ── SEARCH & FILTER FORM ───────────────────────────── -->
+    <!-- Functional Expectation #4: Finding Information via search/filter/sort -->
+    <!-- This form submits via GET so filters are visible in the URL (bookmarkable) -->
+    <form class="filter-bar" method="GET" action="/rooms">
+
+      <!-- Keyword search -->
+      <div class="filter-group filter-search">
+        <label for="search" class="filter-label"><i class="fas fa-magnifying-glass"></i> Search</label>
+        <input
+          type="text"
+          id="search"
+          name="search"
+          class="filter-input"
+          placeholder="Room name or feature…"
+          value="<%= search %>"
+        />
+      </div>
+
+      <!-- Room type filter -->
+      <div class="filter-group">
+        <label for="type" class="filter-label"><i class="fas fa-bed"></i> Type</label>
+        <select name="type" id="type" class="filter-select">
+          <option value="">All Types</option>
+          <option value="Standard" <%= type === 'Standard' ? 'selected' : '' %>>Standard</option>
+          <option value="Deluxe"   <%= type === 'Deluxe'   ? 'selected' : '' %>>Deluxe</option>
+          <option value="Suite"    <%= type === 'Suite'    ? 'selected' : '' %>>Suite</option>
+        </select>
+      </div>
+
+      <!-- Price range -->
+      <div class="filter-group">
+        <label class="filter-label"><i class="fas fa-dollar-sign"></i> Price (SGD/night)</label>
+        <div class="price-range-inputs">
+          <input type="number" name="minPrice" class="filter-input filter-price" placeholder="Min" value="<%= minPrice != 0 ? minPrice : '' %>" min="0" />
+          <span class="price-dash">–</span>
+          <input type="number" name="maxPrice" class="filter-input filter-price" placeholder="Max" value="<%= maxPrice != 9999 ? maxPrice : '' %>" min="0" />
+        </div>
+      </div>
+
+      <!-- Sort order -->
+      <div class="filter-group">
+        <label for="sort" class="filter-label"><i class="fas fa-arrow-up-wide-short"></i> Sort</label>
+        <select name="sort" id="sort" class="filter-select">
+          <option value="price_asc"  <%= sort === 'price_asc'  ? 'selected' : '' %>>Price: Low → High</option>
+          <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Price: High → Low</option>
+          <option value="name_asc"   <%= sort === 'name_asc'   ? 'selected' : '' %>>Name A–Z</option>
+          <option value="newest"     <%= sort === 'newest'     ? 'selected' : '' %>>Newest First</option>
+        </select>
+      </div>
+
+      <!-- Submit & Reset buttons -->
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-filter"></i> Filter
+        </button>
+        <a href="/rooms" class="btn btn-ghost">
+          <i class="fas fa-rotate-left"></i> Reset
+        </a>
+      </div>
+    </form>
+
+    <!-- ── RESULTS COUNT ──────────────────────────────────── -->
+    <!-- Shows how many rooms matched the current filter -->
+    <p class="results-count">
+      <% if (rooms.length === 0) { %>
+        No rooms found matching your criteria.
+      <% } else { %>
+        Showing <strong><%= rooms.length %></strong> room<%= rooms.length !== 1 ? 's' : '' %>
+        <% if (search || type) { %>
+          for <em>"<%= search || type %>"</em>
+        <% } %>
+      <% } %>
+    </p>
+
+    <!-- ── ROOMS GRID ─────────────────────────────────────── -->
+    <div class="rooms-grid">
+      <% if (rooms.length === 0) { %>
+        <!-- Empty state illustration -->
+        <div class="empty-state">
+          <i class="fas fa-door-closed empty-icon"></i>
+          <h3>No rooms found</h3>
+          <p>Try adjusting your filters or <a href="/rooms">clear all filters</a>.</p>
+        </div>
+      <% } else { %>
+        <% rooms.forEach(room => { %>
+          <article class="room-card">
+            <!-- Room image links to detail page -->
+            <a href="/rooms/<%= room.id %>" class="room-card-img-link">
+              <img
+                src="<%= room.image_url || '/images/room-placeholder.jpg' %>"
+                alt="<%= room.room_name %>"
+                class="room-card-img"
+                loading="lazy"
+              />
+              <span class="room-type-badge badge-<%= room.room_type.toLowerCase() %>">
+                <%= room.room_type %>
+              </span>
+              <!-- Capacity pill -->
+              <span class="capacity-pill">
+                <i class="fas fa-user"></i> Up to <%= room.capacity %>
+              </span>
+            </a>
+
+            <div class="room-card-body">
+              <h3 class="room-card-name"><%= room.room_name %></h3>
+              <p class="room-card-desc">
+                <%= room.description ? room.description.substring(0, 110) + '…' : '' %>
+              </p>
+
+              <!-- Quick amenities preview (first 3 amenities) -->
+              <% if (room.amenities) { %>
+                <ul class="amenities-preview">
+                  <% room.amenities.split(',').slice(0,3).forEach(a => { %>
+                    <li><i class="fas fa-check"></i> <%= a.trim() %></li>
+                  <% }) %>
+                </ul>
+              <% } %>
+
+              <div class="room-card-footer">
+                <div class="room-card-price">
+                  <span class="price-currency">SGD</span>
+                  <span class="price-amount"><%= Number(room.price_per_night).toFixed(0) %></span>
+                  <span class="price-period">/ night</span>
+                </div>
+                <div class="room-card-actions">
+                  <a href="/rooms/<%= room.id %>" class="btn btn-ghost btn-sm">Details</a>
+                  <% if (user) { %>
+                    <a href="/book/<%= room.id %>" class="btn btn-primary btn-sm">Book Now</a>
+                  <% } else { %>
+                    <a href="/login" class="btn btn-primary btn-sm">Login to Book</a>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      <% } %>
+    </div>
+
+  </div>
+</section>
+
+<%- include('partials/footer') %>

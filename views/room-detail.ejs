@@ -1,0 +1,192 @@
+<%- include('partials/header') %>
+
+<section class="section section-room-detail">
+  <div class="container">
+
+    <!-- ── BREADCRUMB ────────────────────────────────────── -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <a href="/rooms">Rooms</a>
+      <i class="fas fa-chevron-right"></i>
+      <span><%= room.room_name %></span>
+    </nav>
+
+    <div class="detail-layout">
+
+      <!-- ── LEFT: Room Info ──────────────────────────────── -->
+      <div class="detail-main">
+
+        <!-- Hero image -->
+        <div class="detail-img-wrap">
+          <img
+            src="<%= room.image_url || '/images/room-placeholder.jpg' %>"
+            alt="<%= room.room_name %>"
+            class="detail-img"
+          />
+          <span class="room-type-badge badge-<%= room.room_type.toLowerCase() %> detail-badge">
+            <%= room.room_type %>
+          </span>
+        </div>
+
+        <!-- Room title + meta -->
+        <div class="detail-info">
+          <h1 class="detail-title"><%= room.room_name %></h1>
+          <div class="detail-meta">
+            <span><i class="fas fa-user"></i> Up to <%= room.capacity %> guests</span>
+            <span><i class="fas fa-bed"></i> <%= room.room_type %></span>
+            <span><i class="fas fa-star text-gold"></i>
+              <% if (reviews.length > 0) {
+                   const avg = reviews.reduce((s,r) => s + r.rating, 0) / reviews.length;
+              %>
+                <%= avg.toFixed(1) %> (<%= reviews.length %> review<%= reviews.length !== 1 ? 's' : '' %>)
+              <% } else { %>
+                No reviews yet
+              <% } %>
+            </span>
+          </div>
+
+          <p class="detail-desc"><%= room.description %></p>
+
+          <!-- Amenities list -->
+          <% if (room.amenities) { %>
+          <div class="amenities-section">
+            <h3 class="amenities-title"><i class="fas fa-list-check"></i> Amenities</h3>
+            <ul class="amenities-list">
+              <% room.amenities.split(',').forEach(a => { %>
+                <li><i class="fas fa-circle-check text-gold"></i> <%= a.trim() %></li>
+              <% }) %>
+            </ul>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- ── REVIEWS SECTION ────────────────────────────── -->
+        <div class="reviews-section">
+          <h3 class="reviews-title">Guest Reviews</h3>
+
+          <!-- Show flash messages for review actions -->
+          <% if (typeof query !== 'undefined' && query) { %>
+            <% if (query.reviewed === '1') { %>
+              <div class="alert alert-success">Your review has been submitted!</div>
+            <% } else if (query.error === 'already_reviewed') { %>
+              <div class="alert alert-warning">You have already reviewed this room.</div>
+            <% } %>
+          <% } %>
+
+          <!-- Review list -->
+          <% if (reviews.length === 0) { %>
+            <p class="no-reviews">No reviews yet. Be the first to share your experience!</p>
+          <% } else { %>
+            <div class="reviews-list">
+              <% reviews.forEach(review => { %>
+                <div class="review-card">
+                  <!-- Star rating display (filled/empty stars) -->
+                  <div class="review-stars">
+                    <% for (let i = 1; i <= 5; i++) { %>
+                      <i class="fas fa-star <%= i <= review.rating ? 'star-filled' : 'star-empty' %>"></i>
+                    <% } %>
+                  </div>
+                  <p class="review-comment">"<%= review.comment %>"</p>
+                  <div class="review-meta">
+                    <strong><%= review.full_name %></strong>
+                    <span class="review-date">
+                      <%= new Date(review.created_at).toLocaleDateString('en-SG', { year:'numeric', month:'short', day:'numeric' }) %>
+                    </span>
+                  </div>
+                  <!-- Allow the author or admin to delete the review -->
+                  <% if (user && (user.id === review.user_id || user.role === 'admin')) { %>
+                    <form action="/review/delete/<%= review.id %>" method="POST" class="review-delete-form">
+                      <button type="submit" class="btn-icon-delete" title="Delete review"
+                        onclick="return confirm('Delete this review?')">
+                        <i class="fas fa-trash-can"></i>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <!-- Leave a review form (only for logged-in users) -->
+          <% if (user && user.role === 'guest') { %>
+            <div class="review-form-wrap">
+              <h4>Leave a Review</h4>
+              <!-- POST /review — handled in app.js -->
+              <form action="/review" method="POST" class="review-form">
+                <input type="hidden" name="room_id" value="<%= room.id %>" />
+
+                <!-- Star rating picker (interactive JS in main.js) -->
+                <div class="star-picker" id="starPicker">
+                  <% for (let i = 1; i <= 5; i++) { %>
+                    <i class="fas fa-star star-pick" data-value="<%= i %>"></i>
+                  <% } %>
+                </div>
+                <!-- Hidden input stores the chosen rating value -->
+                <input type="hidden" name="rating" id="ratingInput" value="" required />
+
+                <textarea
+                  name="comment"
+                  class="review-textarea"
+                  placeholder="Share your experience…"
+                  rows="3"
+                ></textarea>
+
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+              </form>
+            </div>
+          <% } else if (!user) { %>
+            <p class="review-login-prompt">
+              <a href="/login">Log in</a> to leave a review.
+            </p>
+          <% } %>
+        </div>
+      </div><!-- end .detail-main -->
+
+      <!-- ── RIGHT: Booking Sidebar ──────────────────────── -->
+      <aside class="detail-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-price">
+            <span class="price-currency">SGD</span>
+            <span class="price-amount-lg"><%= Number(room.price_per_night).toFixed(0) %></span>
+            <span class="price-period">per night</span>
+          </div>
+
+          <% if (room.is_available) { %>
+            <span class="availability-badge avail-yes">
+              <i class="fas fa-circle-check"></i> Available
+            </span>
+          <% } else { %>
+            <span class="availability-badge avail-no">
+              <i class="fas fa-ban"></i> Unavailable
+            </span>
+          <% } %>
+
+          <ul class="sidebar-highlights">
+            <li><i class="fas fa-user"></i> Up to <%= room.capacity %> guests</li>
+            <li><i class="fas fa-calendar-check"></i> Free cancellation (pending bookings)</li>
+            <li><i class="fas fa-tag"></i> Best rate direct</li>
+          </ul>
+
+          <!-- CTA button — routes depend on login status -->
+          <% if (user && room.is_available) { %>
+            <a href="/book/<%= room.id %>" class="btn btn-primary btn-block">
+              <i class="fas fa-calendar-plus"></i> Book This Room
+            </a>
+          <% } else if (!user) { %>
+            <a href="/login" class="btn btn-primary btn-block">
+              <i class="fas fa-lock"></i> Login to Book
+            </a>
+          <% } else { %>
+            <button class="btn btn-ghost btn-block" disabled>Room Unavailable</button>
+          <% } %>
+
+          <p class="sidebar-note">No payment required to reserve. Pay at check-in.</p>
+        </div>
+      </aside>
+
+    </div><!-- end .detail-layout -->
+  </div>
+</section>
+
+<%- include('partials/footer') %>

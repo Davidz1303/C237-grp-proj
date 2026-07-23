@@ -1,0 +1,194 @@
+<%- include('partials/header') %>
+
+<!-- ── HERO SECTION ───────────────────────────────────────── -->
+<!-- Full-viewport landing banner with animated tagline and CTA -->
+<section class="hero">
+  <div class="hero-overlay"></div> <!-- Dark gradient over background image -->
+  <div class="hero-content">
+    <p class="hero-eyebrow">Welcome to Singapore's Finest</p>
+    <h1 class="hero-title">
+      Stay Beyond<br/><span class="hero-title-accent">Ordinary</span>
+    </h1>
+    <p class="hero-subtitle">
+      Boutique luxury in the heart of Marina Bay — where every detail<br/>
+      is crafted for the discerning traveller.
+    </p>
+    <div class="hero-actions">
+      <a href="/rooms" class="btn btn-primary btn-lg">
+        <i class="fas fa-door-open"></i> Explore Rooms
+      </a>
+      <a href="/register" class="btn btn-outline-white btn-lg">
+        Book Direct & Save
+      </a>
+    </div>
+  </div>
+  <!-- Scroll indicator -->
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <i class="fas fa-arrow-down"></i>
+  </div>
+</section>
+
+<!-- ── STATS BAR ──────────────────────────────────────────── -->
+<section class="stats-bar">
+  <div class="stats-container">
+    <div class="stat-item">
+      <span class="stat-number">50+</span>
+      <span class="stat-label">Luxury Rooms</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">4.9★</span>
+      <span class="stat-label">Guest Rating</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">RP</span>
+      <span class="stat-label">C237 Project</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">24/7</span>
+      <span class="stat-label">Concierge</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED ROOMS ─────────────────────────────────────── -->
+<!-- featuredRooms is fetched in app.js GET / route (3 most recent available rooms) -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">Handpicked for you</p>
+      <h2 class="section-title">Featured Rooms</h2>
+      <p class="section-subtitle">From snug standards to our legendary Presidential Suite.</p>
+    </div>
+
+    <div class="rooms-grid">
+      <% if (featuredRooms.length === 0) { %>
+        <p class="empty-msg">No rooms available at the moment.</p>
+      <% } else { %>
+        <% featuredRooms.forEach(room => { %>
+          <!-- Room card — each links to its detail page -->
+          <article class="room-card">
+            <a href="/rooms/<%= room.id %>" class="room-card-img-link">
+              <img
+                src="<%= room.image_url || '/images/room-placeholder.jpg' %>"
+                alt="<%= room.room_name %>"
+                class="room-card-img"
+                loading="lazy"
+              />
+              <!-- Room type badge overlaid on image -->
+              <span class="room-type-badge badge-<%= room.room_type.toLowerCase() %>">
+                <%= room.room_type %>
+              </span>
+            </a>
+            <div class="room-card-body">
+              <h3 class="room-card-name"><%= room.room_name %></h3>
+              <p class="room-card-desc"><%= room.description ? room.description.substring(0, 100) + '…' : '' %></p>
+              <div class="room-card-footer">
+                <div class="room-card-price">
+                  <span class="price-currency">SGD</span>
+                  <span class="price-amount"><%= Number(room.price_per_night).toFixed(0) %></span>
+                  <span class="price-period">/ night</span>
+                </div>
+                <div class="room-card-actions">
+                  <a href="/rooms/<%= room.id %>" class="btn btn-ghost btn-sm">Details</a>
+                  <% if (user) { %>
+                    <a href="/book/<%= room.id %>" class="btn btn-primary btn-sm">Book</a>
+                  <% } else { %>
+                    <a href="/login" class="btn btn-primary btn-sm">Book</a>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <div class="section-cta">
+      <a href="/rooms" class="btn btn-outline-dark btn-lg">
+        View All Rooms <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── AMENITIES / WHY CHOOSE US ─────────────────────────── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">The DreamStay Hotel Difference</p>
+      <h2 class="section-title">Why Guests Love Us</h2>
+    </div>
+    <div class="amenities-grid">
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-wifi"></i></div>
+        <h4>High-Speed WiFi</h4>
+        <p>Gigabit fibre throughout the property — work or stream without limits.</p>
+      </div>
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-utensils"></i></div>
+        <h4>Rooftop Dining</h4>
+        <p>Award-winning restaurant with skyline views and locally inspired cuisine.</p>
+      </div>
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-spa"></i></div>
+        <h4>Wellness Spa</h4>
+        <p>Full-service spa, pool, and fitness centre open 6 AM – 10 PM daily.</p>
+      </div>
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-concierge-bell"></i></div>
+        <h4>24/7 Concierge</h4>
+        <p>Our team is on hand around the clock to make every request a reality.</p>
+      </div>
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-car"></i></div>
+        <h4>Valet Parking</h4>
+        <p>Complimentary valet and secure underground parking for all guests.</p>
+      </div>
+      <div class="amenity-card">
+        <div class="amenity-icon"><i class="fas fa-shield-halved"></i></div>
+        <h4>Secure Booking</h4>
+        <p>Your data is encrypted and your reservation is guaranteed upon confirmation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIAL ────────────────────────────────────────── -->
+<section class="section section-testimonial">
+  <div class="container container-narrow">
+    <blockquote class="testimonial">
+      <p class="testimonial-text">
+        "DreamStay Hotel redefined what a hotel stay means to me. The attention to detail,
+        the warmth of the staff, and the sheer elegance of the rooms — I've stayed
+        in five-star hotels across 30 countries, and this is where I always return."
+      </p>
+      <footer class="testimonial-author">
+        — <strong>Marcus L.</strong>, Frequent Guest &amp; Platinum Member
+      </footer>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ── CTA BANNER ────────────────────────────────────────── -->
+<% if (!user) { %>
+<section class="section section-cta-banner">
+  <div class="container">
+    <div class="cta-banner">
+      <div class="cta-banner-text">
+        <h2>Ready for your next escape?</h2>
+        <p>Create a free account and unlock exclusive member rates.</p>
+      </div>
+      <div class="cta-banner-actions">
+        <a href="/register" class="btn btn-primary btn-lg">Get Started</a>
+        <a href="/login"    class="btn btn-outline-white btn-lg">Sign In</a>
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<%- include('partials/footer') %>

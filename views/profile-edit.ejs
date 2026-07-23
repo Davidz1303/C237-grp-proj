@@ -1,0 +1,146 @@
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container container-narrow">
+    <h1 class="page-title"><i class="fas fa-user-pen"></i> Edit Profile</h1>
+    <p class="page-subtitle">
+      Personalise your DreamStay Hotel account — update your photo, bio, contact details, and password.
+    </p>
+
+    <!-- Alert messages from POST /profile/edit -->
+    <% if (error) { %>
+      <div class="alert alert-error"><i class="fas fa-circle-exclamation"></i> <%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><i class="fas fa-circle-check"></i> <%= success %></div>
+    <% } %>
+
+    <!--
+      Profile edit form
+      enctype="multipart/form-data" is required when uploading files (avatar)
+      Handled by POST /profile/edit in app.js using multer middleware
+    -->
+    <form action="/profile/edit" method="POST" enctype="multipart/form-data" class="profile-form">
+
+      <!-- ── AVATAR UPLOAD ───────────────────────────────── -->
+      <div class="avatar-upload-section">
+        <div class="avatar-preview-wrap" id="avatarPreviewWrap">
+          <% if (profile.avatar) { %>
+            <img src="<%= profile.avatar %>" alt="Avatar" class="avatar-preview" id="avatarPreview" />
+          <% } else { %>
+            <!-- Default letter avatar if no photo uploaded yet -->
+            <div class="avatar-placeholder-lg" id="avatarPlaceholder">
+              <%= profile.full_name.charAt(0).toUpperCase() %>
+            </div>
+            <img src="" alt="Preview" class="avatar-preview hidden" id="avatarPreview" />
+          <% } %>
+        </div>
+        <div class="avatar-upload-controls">
+          <label for="avatar" class="btn btn-outline-dark btn-sm" style="cursor:pointer;">
+            <i class="fas fa-camera"></i> Change Photo
+          </label>
+          <!-- Hidden file input — clicking the label above triggers it -->
+          <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" />
+          <p class="form-hint">JPG, PNG or WebP · Max 5 MB</p>
+        </div>
+      </div>
+
+      <!-- ── PERSONAL DETAILS ────────────────────────────── -->
+      <fieldset class="form-fieldset">
+        <legend class="fieldset-legend">Personal Details</legend>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full_name" class="form-label">Full Name</label>
+            <input
+              type="text"
+              id="full_name"
+              name="full_name"
+              class="form-input"
+              value="<%= profile.full_name %>"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-input"
+              value="<%= profile.phone || '' %>"
+              placeholder="+65 9000 0000"
+            />
+          </div>
+        </div>
+
+        <!-- Bio/About Me — personalisation feature -->
+        <div class="form-group">
+          <label for="bio" class="form-label">About Me</label>
+          <textarea
+            id="bio"
+            name="bio"
+            class="form-input"
+            rows="3"
+            placeholder="Tell us a little about yourself…"
+          ><%= profile.bio || '' %></textarea>
+          <p class="form-hint">This appears on your profile and helps us personalise your stay.</p>
+        </div>
+      </fieldset>
+
+      <!-- ── CHANGE PASSWORD ─────────────────────────────── -->
+      <fieldset class="form-fieldset">
+        <legend class="fieldset-legend">Change Password <span class="optional">(leave blank to keep current)</span></legend>
+
+        <div class="form-group">
+          <label for="current_password" class="form-label">Current Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input
+              type="password"
+              id="current_password"
+              name="current_password"
+              class="form-input input-with-icon"
+              placeholder="Your current password"
+              autocomplete="current-password"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="new_password" class="form-label">New Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock-open input-icon"></i>
+            <input
+              type="password"
+              id="new_password"
+              name="new_password"
+              class="form-input input-with-icon"
+              placeholder="Min. 6 characters"
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Read-only info: email cannot be changed -->
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="text" class="form-input" value="<%= profile.email %>" disabled />
+        <p class="form-hint">Email cannot be changed. Contact support if needed.</p>
+      </div>
+
+      <!-- Form action buttons -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-floppy-disk"></i> Save Changes
+        </button>
+        <a href="/dashboard" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

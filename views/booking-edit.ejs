@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+
+<section class="section">
+  <div class="container container-narrow">
+    <h1 class="page-title"><i class="fas fa-pen-to-square"></i> Edit Booking</h1>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <!-- Room summary -->
+    <div class="booking-room-preview">
+      <img src="<%= booking.image_url || '/images/room-placeholder.jpg' %>" alt="<%= booking.room_name %>" class="booking-room-img" />
+      <div class="booking-room-info">
+        <h2><%= booking.room_name %></h2>
+        <p>SGD <%= Number(booking.price_per_night).toFixed(0) %> / night</p>
+      </div>
+    </div>
+
+    <!-- Edit form — POSTs to /booking/edit/:id in app.js -->
+    <form action="/booking/edit/<%= booking.id %>" method="POST" class="booking-form" id="bookingForm">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="check_in" class="form-label">Check-in Date</label>
+          <!-- Pre-fill with existing booking dates (slice gives YYYY-MM-DD format for <input type=date>) -->
+          <input
+            type="date"
+            id="check_in"
+            name="check_in"
+            class="form-input"
+            value="<%= new Date(booking.check_in).toISOString().slice(0,10) %>"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="check_out" class="form-label">Check-out Date</label>
+          <input
+            type="date"
+            id="check_out"
+            name="check_out"
+            class="form-input"
+            value="<%= new Date(booking.check_out).toISOString().slice(0,10) %>"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="guests" class="form-label">Number of Guests</label>
+        <input type="number" id="guests" name="guests" class="form-input"
+          value="<%= booking.guests %>" min="1" max="6" required />
+      </div>
+
+      <div class="form-group">
+        <label for="special_requests" class="form-label">Special Requests</label>
+        <textarea id="special_requests" name="special_requests" class="form-input" rows="3"
+          placeholder="E.g. early check-in, non-smoking…"><%= booking.special_requests || '' %></textarea>
+      </div>
+
+      <!-- Live price update using existing JS booking logic -->
+      <div class="price-estimate" id="priceEstimate">
+        <div class="price-estimate-row">
+          <span>SGD <%= Number(booking.price_per_night).toFixed(0) %> × <span id="estimateNights">?</span> nights</span>
+          <span><strong>SGD <span id="estimateTotal">?</span></strong></span>
+        </div>
+      </div>
+      <input type="hidden" id="pricePerNight" value="<%= booking.price_per_night %>" />
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-floppy-disk"></i> Save Changes
+        </button>
+        <a href="/dashboard" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
