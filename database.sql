@@ -119,7 +119,7 @@ CREATE TABLE testimonials (
 -- Admin account — password: admin123
 -- bcrypt hash of "admin123" (10 salt rounds)
 INSERT INTO users (full_name, email, password, phone, role, bio) VALUES
-('Admin Manager', 'admin@DreamStay Hotel.com',
+('Admin Manager', 'admin@dreamstayhotel.com',
  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
  '+65 9000 0001', 'admin',
  'Hotel operations manager with 10 years of hospitality experience.');
