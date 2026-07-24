@@ -168,7 +168,16 @@ app.get("/", async (req, res) => {
     const [featuredRooms] = await dbPromise.query(
       "SELECT * FROM rooms WHERE is_available = 1 ORDER BY created_at DESC LIMIT 3"
     );
-    res.render("index", { featuredRooms }); // Render views/index.ejs
+
+    // Fetch the 3 most recent guest testimonials (JOIN to get the guest's name)
+    // This replaces the old hardcoded homepage quote with real content.
+    const [testimonials] = await dbPromise.query(
+      `SELECT t.*, u.full_name FROM testimonials t
+       JOIN users u ON t.user_id = u.id
+       ORDER BY t.created_at DESC LIMIT 3`
+    );
+
+    res.render("index", { featuredRooms, testimonials }); // Render views/index.ejs
   } catch (err) {
     console.error("Home page error:", err);
     res.render("error", { message: "Could not load homepage." });
@@ -253,6 +262,132 @@ app.get("/rooms/:id", async (req, res) => {
 // ── About Page ────────────────────────────────────────────────
 app.get("/about", (req, res) => {
   res.render("about");
+});
+
+// ============================================================
+// GUEST STORIES / TESTIMONIALS (Person 2 - Homepage & About)
+// ============================================================
+// This is Person 2's CRUD resource. It replaces the old hardcoded
+// homepage testimonial with real, guest-submitted stories.
+// Each guest can only have ONE testimonial, and can only
+// edit/delete their own (admins can delete any).
+
+// 📖 READ: List all testimonials + show the add form 📖
+// GET /testimonials
+app.get("/testimonials", async (req, res) => {
+  try {
+    const [testimonials] = await dbPromise.query(
+      `SELECT t.*, u.full_name FROM testimonials t
+       JOIN users u ON t.user_id = u.id
+       ORDER BY t.created_at DESC`
+    );
+
+    // If the logged-in guest already has a testimonial, find it so the
+    // page can show "Edit your story" instead of the add form.
+    let myTestimonial = null;
+    if (req.session.user) {
+      const [[mine]] = await dbPromise.query(
+        "SELECT * FROM testimonials WHERE user_id = ?", [req.session.user.id]
+      );
+      myTestimonial = mine || null;
+    }
+
+    res.render("testimonials", {
+      testimonials,
+      myTestimonial,
+      success: req.query.success || null,
+      error: req.query.error || null,
+    });
+  } catch (err) {
+    console.error("Testimonials list error:", err);
+    res.render("error", { message: "Could not load guest stories." });
+  }
+});
+
+// 📝 CREATE: Submit a new testimonial 📝
+// POST /testimonials - only logged-in guests can submit
+app.post("/testimonials", requireLogin, async (req, res) => {
+  try {
+    const { quote, rating } = req.body;
+    const userId = req.session.user.id;
+
+    if (!quote || !rating) {
+      return res.redirect("/testimonials?error=missing");
+    }
+
+    // One story per guest - INSERT will fail (unique_testimonial) if they
+    // already have one, so we check first for a friendlier error message.
+    const [[existing]] = await dbPromise.query(
+      "SELECT id FROM testimonials WHERE user_id = ?", [userId]
+    );
+    if (existing) {
+      return res.redirect("/testimonials?error=duplicate");
+    }
+
+    await dbPromise.query(
+      "INSERT INTO testimonials (user_id, quote, rating) VALUES (?, ?, ?)",
+      [userId, quote, rating]
+    );
+
+    res.redirect("/testimonials?success=added");
+  } catch (err) {
+    console.error("Add testimonial error:", err);
+    res.redirect("/testimonials?error=failed");
+  }
+});
+
+// ✏️ UPDATE: Edit my own testimonial ✏️
+// POST /testimonials/edit/:id
+app.post("/testimonials/edit/:id", requireLogin, async (req, res) => {
+  try {
+    const { quote, rating } = req.body;
+    const testimonialId = req.params.id;
+
+    // Look up the testimonial first so we can check ownership
+    const [[testimonial]] = await dbPromise.query(
+      "SELECT * FROM testimonials WHERE id = ?", [testimonialId]
+    );
+
+    // Only the guest who wrote it may edit it
+    if (!testimonial || testimonial.user_id !== req.session.user.id) {
+      return res.status(403).render("error", { message: "You can only edit your own story." });
+    }
+
+    await dbPromise.query(
+      "UPDATE testimonials SET quote = ?, rating = ? WHERE id = ?",
+      [quote, rating, testimonialId]
+    );
+
+    res.redirect("/testimonials?success=updated");
+  } catch (err) {
+    console.error("Edit testimonial error:", err);
+    res.redirect("/testimonials?error=failed");
+  }
+});
+
+// ❌ DELETE: Remove a testimonial ❌
+// POST /testimonials/delete/:id - owner or admin only
+app.post("/testimonials/delete/:id", requireLogin, async (req, res) => {
+  try {
+    const testimonialId = req.params.id;
+
+    const [[testimonial]] = await dbPromise.query(
+      "SELECT * FROM testimonials WHERE id = ?", [testimonialId]
+    );
+
+    const isOwner = testimonial && testimonial.user_id === req.session.user.id;
+    const isAdmin = req.session.user.role === "admin";
+
+    if (!testimonial || (!isOwner && !isAdmin)) {
+      return res.status(403).render("error", { message: "You can't delete this story." });
+    }
+
+    await dbPromise.query("DELETE FROM testimonials WHERE id = ?", [testimonialId]);
+    res.redirect("/testimonials?success=deleted");
+  } catch (err) {
+    console.error("Delete testimonial error:", err);
+    res.redirect("/testimonials?error=failed");
+  }
 });
 
 // ============================================================

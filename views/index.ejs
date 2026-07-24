@@ -160,16 +160,37 @@
 <!-- ── TESTIMONIAL ────────────────────────────────────────── -->
 <section class="section section-testimonial">
   <div class="container container-narrow">
-    <blockquote class="testimonial">
-      <p class="testimonial-text">
-        "DreamStay Hotel redefined what a hotel stay means to me. The attention to detail,
-        the warmth of the staff, and the sheer elegance of the rooms — I've stayed
-        in five-star hotels across 30 countries, and this is where I always return."
-      </p>
-      <footer class="testimonial-author">
-        — <strong>Marcus L.</strong>, Frequent Guest &amp; Platinum Member
-      </footer>
-    </blockquote>
+    <% if (testimonials && testimonials.length > 0) { %>
+      <% testimonials.forEach(t => { %>
+        <blockquote class="testimonial" style="margin-bottom: 2rem;">
+          <div class="testimonial-rating" style="color: #d4af37; margin-bottom: 1rem; text-align: center;">
+            <% for(let i=0; i<5; i++) { %>
+              <i class="fas fa-star" style="<%= i >= t.rating ? 'color: #e4e5e9;' : '' %>"></i>
+            <% } %>
+          </div>
+          <p class="testimonial-text">
+            "<%= t.quote %>"
+          </p>
+          <footer class="testimonial-author">
+            — <strong><%= t.full_name %></strong>
+          </footer>
+        </blockquote>
+      <% }) %>
+    <% } else { %>
+      <blockquote class="testimonial">
+        <p class="testimonial-text">
+          "DreamStay Hotel redefined what a hotel stay means to me. The attention to detail,
+          the warmth of the staff, and the sheer elegance of the rooms — I've stayed
+          in five-star hotels across 30 countries, and this is where I always return."
+        </p>
+        <footer class="testimonial-author">
+          — <strong>Marcus L.</strong>, Frequent Guest &amp; Platinum Member
+        </footer>
+      </blockquote>
+    <% } %>
+    <div class="text-center" style="margin-top: 2rem;">
+      <a href="/testimonials" class="btn btn-outline-dark">Read All Guest Stories</a>
+    </div>
   </div>
 </section>
 

@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+
+<div class="container" style="padding-top: 100px; padding-bottom: 50px;">
+  <div class="section-header text-center mb-5">
+    <h1 class="section-title">Guest Stories</h1>
+    <p class="section-subtitle">Hear what our guests have to say about their stay at DreamStay.</p>
+  </div>
+
+  <% if (success) { %>
+    <div class="alert alert-success"><%= success === 'added' ? 'Your story was shared successfully!' : success === 'updated' ? 'Your story was updated successfully!' : 'Story deleted.' %></div>
+  <% } %>
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error === 'duplicate' ? 'You have already shared a story.' : error === 'missing' ? 'Please provide both a rating and a comment.' : 'An error occurred.' %></div>
+  <% } %>
+
+  <!-- Add / Edit Testimonial Form (Only for Logged-In Users) -->
+  <% if (user) { %>
+    <div class="card mb-5 shadow-sm" style="max-width: 600px; margin: 0 auto; border: none; border-radius: 12px; padding: 20px;">
+      <div class="card-body">
+        <h4 class="card-title mb-4"><%= myTestimonial ? 'Edit Your Story' : 'Share Your Experience' %></h4>
+        
+        <form action="<%= myTestimonial ? '/testimonials/edit/' + myTestimonial.id : '/testimonials' %>" method="POST">
+          <div class="mb-3">
+            <label class="form-label">Rating (1-5)</label>
+            <select name="rating" class="form-select" required>
+              <option value="5" <%= myTestimonial && myTestimonial.rating == 5 ? 'selected' : '' %>>⭐⭐⭐⭐⭐ (5/5)</option>
+              <option value="4" <%= myTestimonial && myTestimonial.rating == 4 ? 'selected' : '' %>>⭐⭐⭐⭐ (4/5)</option>
+              <option value="3" <%= myTestimonial && myTestimonial.rating == 3 ? 'selected' : '' %>>⭐⭐⭐ (3/5)</option>
+              <option value="2" <%= myTestimonial && myTestimonial.rating == 2 ? 'selected' : '' %>>⭐⭐ (2/5)</option>
+              <option value="1" <%= myTestimonial && myTestimonial.rating == 1 ? 'selected' : '' %>>⭐ (1/5)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Your Story</label>
+            <textarea name="quote" class="form-control" rows="4" required><%= myTestimonial ? myTestimonial.quote : '' %></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><%= myTestimonial ? 'Update Story' : 'Submit Story' %></button>
+        </form>
+
+        <% if (myTestimonial) { %>
+          <form action="/testimonials/delete/<%= myTestimonial.id %>" method="POST" style="margin-top: 10px;" onsubmit="return confirm('Delete your story?');">
+            <button type="submit" class="btn btn-outline-danger">Delete Story</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="text-center mb-5">
+      <p>Log in to share your own experience with us!</p>
+      <a href="/login" class="btn btn-outline-dark">Sign In</a>
+    </div>
+  <% } %>
+
+  <!-- Testimonials List -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <% if (testimonials.length === 0) { %>
+      <div class="col-12 text-center">
+        <p class="text-muted">No stories shared yet. Be the first!</p>
+      </div>
+    <% } else { %>
+      <% testimonials.forEach(t => { %>
+        <div class="col">
+          <div class="card h-100 shadow-sm" style="border: none; border-radius: 12px;">
+            <div class="card-body">
+              <div class="mb-2" style="color: #d4af37;">
+                <% for(let i=0; i<5; i++) { %>
+                  <i class="fas fa-star" style="<%= i >= t.rating ? 'color: #e4e5e9;' : '' %>"></i>
+                <% } %>
+              </div>
+              <p class="card-text" style="font-style: italic;">"<%= t.quote %>"</p>
+              <p class="card-text text-muted text-end mb-0">- <strong><%= t.full_name %></strong></p>
+              
+              <% if (user && user.role === 'admin') { %>
+                <form action="/testimonials/delete/<%= t.id %>" method="POST" style="margin-top: 10px;" onsubmit="return confirm('Admin: Delete this story?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
