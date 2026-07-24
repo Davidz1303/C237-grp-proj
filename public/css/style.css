@@ -520,6 +520,9 @@ ul { list-style: none; }
 .form-control:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,110,0.15); }
 .form-control { resize: vertical; }
 
+/* Character counter under the story textarea */
+.char-counter { display: block; text-align: right; font-size: 0.75rem; color: var(--grey-400); margin-top: 4px; }
+
 /* Extra alert colour + button style only used on this page */
 .alert-danger        { background: #f8d7da; color: #721c24; border-left: 4px solid var(--red); }
 .btn-outline-danger      { background: transparent; color: var(--red); border-color: var(--red); }
