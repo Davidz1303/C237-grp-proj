@@ -419,4 +419,49 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ==============================================================
+  // 15. GUEST STORIES: STAR PICKER + CHARACTER COUNTER (Person 2)
+  // ==============================================================
+  // The rating stars on the Guest Stories form work the same way
+  // as the room review stars: hover previews the rating, click
+  // locks it in and updates the hidden input that gets submitted.
+  // The textarea counter just shows how many characters are left.
+
+  const testimonialStars = document.getElementById("testimonialStarPicker");
+  const testimonialRating = document.getElementById("testimonialRatingInput");
+
+  if (testimonialStars && testimonialRating) {
+    const stars = testimonialStars.querySelectorAll(".star-pick");
+
+    const highlightStars = (value) => {
+      stars.forEach((s) => {
+        s.classList.toggle("active", parseInt(s.dataset.value) <= value);
+      });
+    };
+
+    stars.forEach((star) => {
+      star.addEventListener("mouseenter", () => {
+        highlightStars(parseInt(star.dataset.value));
+      });
+      star.addEventListener("mouseleave", () => {
+        highlightStars(parseInt(testimonialRating.value) || 0);
+      });
+      star.addEventListener("click", () => {
+        testimonialRating.value = star.dataset.value;
+        highlightStars(parseInt(testimonialRating.value));
+      });
+    });
+  }
+
+  const testimonialQuote = document.getElementById("testimonialQuote");
+  const testimonialCounter = document.getElementById("testimonialCharCounter");
+
+  if (testimonialQuote && testimonialCounter) {
+    const updateCount = () => {
+      testimonialCounter.textContent = `${testimonialQuote.value.length}/400`;
+    };
+    testimonialQuote.addEventListener("input", updateCount);
+    updateCount(); // Run once so an edited story shows the right count immediately
+  }
+
 }); // End of DOMContentLoaded
