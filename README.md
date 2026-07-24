@@ -24,7 +24,7 @@
 ### Project Objectives
 - **Full-stack web app** using Node.js + Express + MySQL
 - **EJS templating** with reusable partials (header, footer)
-- **CRUD operations** on two resource types: Rooms and Bookings
+- **CRUD operations** on three resource types: Rooms, Bookings, and Testimonials
 - **Role-based access**: Guest and Admin roles
 - **User authentication**: Register, login, logout with bcrypt hashing
 - **File uploads**: Room images and user avatars via Multer
@@ -34,12 +34,13 @@
 - Room listings with types (Standard, Deluxe, Suite)
 - Room detail page with guest reviews
 - Booking management (create, view, edit, cancel)
+- Guest Stories page — guests post, edit, and delete their own testimonial
 - Admin panel for managing rooms, bookings, and users
 
 ### Functional Expectations
 1. **User Access & Identity** — Register, login, logout, profile edit with avatar
 2. **Role-Based Access** — Guest vs Admin roles; admin-only routes protected
-3. **Resource Management (CRUD)** — Full CRUD on Bookings (guests) and Rooms (admin)
+3. **Resource Management (CRUD)** — Full CRUD on Bookings (guests), Testimonials (guests), and Rooms (admin)
 4. **Finding Information** — Search, filter by type/price, sort rooms
 5. **Personalisation** — User bio, avatar, special booking requests; personalised dashboard
 
@@ -106,7 +107,7 @@ Open your browser: **http://localhost:3000**
 
 | Role  | Email                  | Password   |
 |-------|------------------------|------------|
-| Admin | admin@DreamStay Hotel.com     | `password` |
+| Admin | admin@dreamstayhotel.com     | `password` |
 | Guest | jane@email.com         | `password` |
 
 > **Note:** The seed data uses a bcrypt hash of the string `"password"`. To create real accounts with different passwords, use the `/register` page.
@@ -136,6 +137,7 @@ hotel-app/
 │   ├── book.ejs                ← New booking form
 │   ├── booking-edit.ejs        ← Edit existing booking
 │   ├── about.ejs               ← About page
+│   ├── testimonials.ejs        ← Guest Stories page (testimonials CRUD)
 │   ├── error.ejs               ← Error page
 │   └── admin/
 │       ├── dashboard.ejs       ← Admin overview + stats
@@ -170,6 +172,7 @@ hotel-app/
 | GET    | `/rooms`         | All rooms with search/filter/sort    |
 | GET    | `/rooms/:id`     | Single room detail + reviews         |
 | GET    | `/about`         | About page                           |
+| GET    | `/testimonials`  | Guest Stories page (list + form)     |
 | GET    | `/login`         | Login form                           |
 | POST   | `/login`         | Authenticate user                    |
 | GET    | `/register`      | Registration form                    |
@@ -189,6 +192,9 @@ hotel-app/
 | POST   | `/booking/delete/:id`   | Cancel / delete booking         |
 | POST   | `/review`               | Submit a room review            |
 | POST   | `/review/delete/:id`    | Delete own review               |
+| POST   | `/testimonials`         | Post a new testimonial          |
+| POST   | `/testimonials/edit/:id`   | Edit own testimonial         |
+| POST   | `/testimonials/delete/:id` | Delete own testimonial (or any, if admin) |
 
 ### Admin Routes (requireAdmin)
 | Method | Route                          | Description                  |
@@ -226,7 +232,7 @@ You can also upload images directly through the Admin panel when adding/editing 
 - Sessions signed with a secret key (change in production)
 - SQL queries use **parameterised statements** (`?` placeholders) — prevents SQL injection
 - Route guards (`requireLogin`, `requireAdmin`) block unauthorised access
-- Users can only edit/delete their **own** bookings and reviews
+- Users can only edit/delete their **own** bookings, reviews, and testimonials (admins can delete any testimonial)
 - File upload restricted to image types only (JPEG, JPG, PNG, WebP), max 5 MB
 
 ---
