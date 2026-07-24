@@ -14,6 +14,7 @@ USE DreamStay Hotel;
 
 -- ── Drop tables if they exist (for clean re-runs) ─────────────
 -- Drop in reverse dependency order to avoid foreign key errors
+DROP TABLE IF EXISTS testimonials;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS rooms;
@@ -95,6 +96,23 @@ CREATE TABLE reviews (
 );
 
 -- ================================================================
+-- TABLE: testimonials
+-- Homepage + Guest Stories page (/testimonials) — CRUD resource
+-- owned by Person 2. Guests share one quote + star rating each;
+-- resubmitting is handled as an edit, not a duplicate row.
+-- ================================================================
+CREATE TABLE testimonials (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT NOT NULL,
+  quote      VARCHAR(400) NOT NULL,
+  rating     TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE KEY unique_testimonial (user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ================================================================
 -- SEED DATA — Default accounts and sample rooms
 -- ================================================================
 
@@ -134,7 +152,7 @@ INSERT INTO rooms (room_name, room_type, price_per_night, capacity, description,
  '/images/room-suite.jpg'),
 
 ('Family Deluxe', 'Deluxe', 280.00, 4,
- 'Designed for families, this spacious room features two queen beds, a kids' entertainment corner, and easy access to the pool.',
+ 'Designed for families, this spacious room features two queen beds, a kids'' entertainment corner, and easy access to the pool.',
  'Free WiFi, Air Conditioning, 2× Flat-screen TV, Mini-fridge, Kids Corner, Pool Access, Room Service',
  '/images/room-family.jpg'),
 
@@ -151,3 +169,7 @@ INSERT INTO bookings (user_id, room_id, check_in, check_out, guests, special_req
 -- Sample reviews
 INSERT INTO reviews (user_id, room_id, rating, comment) VALUES
 (2, 1, 5, 'Absolutely loved the garden view! The room was spotless and the staff were incredibly friendly. Will definitely return.');
+
+-- Sample testimonial (shown on the homepage + Guest Stories page)
+INSERT INTO testimonials (user_id, quote, rating) VALUES
+(2, 'DreamStay Hotel redefined what a hotel stay means to me. The attention to detail, the warmth of the staff, and the sheer elegance of the rooms made this the best stay I have had in years.', 5);
