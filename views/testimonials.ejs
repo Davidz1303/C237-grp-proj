@@ -22,17 +22,18 @@
         <form action="<%= myTestimonial ? '/testimonials/edit/' + myTestimonial.id : '/testimonials' %>" method="POST">
           <div class="mb-3">
             <label class="form-label">Rating (1-5)</label>
-            <select name="rating" class="form-select" required>
-              <option value="5" <%= myTestimonial && myTestimonial.rating == 5 ? 'selected' : '' %>>⭐⭐⭐⭐⭐ (5/5)</option>
-              <option value="4" <%= myTestimonial && myTestimonial.rating == 4 ? 'selected' : '' %>>⭐⭐⭐⭐ (4/5)</option>
-              <option value="3" <%= myTestimonial && myTestimonial.rating == 3 ? 'selected' : '' %>>⭐⭐⭐ (3/5)</option>
-              <option value="2" <%= myTestimonial && myTestimonial.rating == 2 ? 'selected' : '' %>>⭐⭐ (2/5)</option>
-              <option value="1" <%= myTestimonial && myTestimonial.rating == 1 ? 'selected' : '' %>>⭐ (1/5)</option>
-            </select>
+            <!-- Click a star to set your rating (JS in main.js) -->
+            <div class="star-picker" id="testimonialStarPicker">
+              <% for (let s = 1; s <= 5; s++) { %>
+                <i class="fas fa-star star-pick <%= myTestimonial && s <= myTestimonial.rating ? 'active' : '' %>" data-value="<%= s %>"></i>
+              <% } %>
+            </div>
+            <input type="hidden" id="testimonialRatingInput" name="rating" value="<%= myTestimonial ? myTestimonial.rating : 5 %>" required />
           </div>
           <div class="mb-3">
             <label class="form-label">Your Story</label>
-            <textarea name="quote" class="form-control" rows="4" required><%= myTestimonial ? myTestimonial.quote : '' %></textarea>
+            <textarea id="testimonialQuote" name="quote" class="form-control" rows="4" maxlength="400" required><%= myTestimonial ? myTestimonial.quote : '' %></textarea>
+            <span class="char-counter" id="testimonialCharCounter">0/400</span>
           </div>
           <button type="submit" class="btn btn-primary"><%= myTestimonial ? 'Update Story' : 'Submit Story' %></button>
         </form>
